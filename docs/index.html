@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#14131f">
+<title>rpsf battle</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="app">
+
+  <!-- MENU -->
+  <section id="menu" class="screen">
+    <div class="logo"><span>🪨</span><span>📄</span><span>✂️</span><span>🫧</span></div>
+    <h1>rpsf battle</h1>
+    <p class="tag">rock · paper · scissors · foam<br><small>a tiny duel of four cards</small></p>
+
+    <div class="group">
+      <h3>mode</h3>
+      <div class="chips" id="modeChips"></div>
+    </div>
+    <div class="group" id="botGroup">
+      <h3>opponent</h3>
+      <div class="chips" id="botChips"></div>
+      <p class="hint" id="botBlurb"></p>
+    </div>
+    <div class="group" id="sideGroup">
+      <h3>you play</h3>
+      <div class="chips" id="sideChips"></div>
+    </div>
+    <div class="group">
+      <h3>variant</h3>
+      <div class="chips" id="varChips"></div>
+      <p class="hint" id="varBlurb"></p>
+    </div>
+
+    <button class="big primary" id="playBtn">play</button>
+    <div class="row">
+      <button class="ghost" id="rulesBtn">how to play</button>
+      <button class="ghost" id="statsBtn">my record</button>
+    </div>
+    <p class="foot">hicealgo labs · v2 web</p>
+  </section>
+
+  <!-- GAME -->
+  <section id="game" class="screen hidden">
+    <header>
+      <button class="icon" id="menuBtn" aria-label="menu">☰</button>
+      <div id="turnBanner">…</div>
+      <button class="icon" id="speedBtn" aria-label="speed">▶</button>
+    </header>
+
+    <div id="board">
+      <div class="side foe" id="foeRow"></div>
+      <div id="mid">
+        <div id="fatigue"></div>
+        <div id="narr"></div>
+        <div id="logbox"></div>
+      </div>
+      <div class="side me" id="meRow"></div>
+    </div>
+
+    <footer id="actionBar">
+      <div id="hint"></div>
+      <div id="btns"></div>
+    </footer>
+
+    <div id="fx"></div>
+  </section>
+
+  <!-- OVERLAYS -->
+  <div id="sheet" class="sheet hidden"><div class="sheetBody" id="sheetBody"></div></div>
+</div>
+<script src="engine.js"></script>
+<script src="bots.js"></script>
+<script src="oracle.js"></script>
+<script src="telemetry.js"></script>
+<script src="ui.js"></script>
+</body>
+</html>
