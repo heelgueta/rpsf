@@ -16,7 +16,7 @@
   const B = (typeof require !== 'undefined' && typeof module !== 'undefined') ? require('./bots.js') : root.RPSBots;
 
   function key(s) {
-    const a = [s.turn, Math.min(s.nk, E.FATIGUE_AT)];
+    const a = [s.turn + (s.gift ? 2 : 0), Math.min(s.nk, E.FATIGUE_AT)];
     for (let i = 0; i < s.h.length; i++) a.push(s.h[i], s.a[i], s.c[i]);
     return String.fromCharCode.apply(null, a);
   }

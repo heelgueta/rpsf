@@ -48,7 +48,7 @@
     const bonus2 = variant.bonus2 || {};
     const types = loadouts || [[R, P, S, F], [R, P, S, F]];
     const n = types[0].length;
-    const s = { n, t: [], h: [], a: [], c: [], cap: [], turn: 0, nk: 0 };
+    const s = { n, t: [], h: [], a: [], c: [], cap: [], turn: 0, nk: 0, first: !!variant.comeback, gift: false };
     for (let side = 0; side < 2; side++) {
       const b = side === 0 ? bonus : { h: (bonus.h || 0) + (bonus2.h || 0), a: (bonus.a || 0) + (bonus2.a || 0), c: (bonus.c || 0) + (bonus2.c || 0) };
       for (let k = 0; k < n; k++) {
@@ -68,7 +68,7 @@
   }
 
   function clone(s) {
-    return { n: s.n, t: s.t, h: s.h.slice(), a: s.a.slice(), c: s.c.slice(), cap: s.cap, turn: s.turn, nk: s.nk };
+    return { n: s.n, t: s.t, h: s.h.slice(), a: s.a.slice(), c: s.c.slice(), cap: s.cap, turn: s.turn, nk: s.nk, first: s.first, gift: s.gift };
   }
 
   const side = (s, i) => (i >= s.n ? 1 : 0);
@@ -174,6 +174,11 @@
     const ev = [];
     const me = s.turn;
     let killed = false;
+    if (m.k === 'gift') {
+      s.h[m.to] += 1; s.gift = false;
+      ev.push({ e: 'gift', card: m.to });
+      return { state: s, events: ev, result: null, mover: me };
+    }
     if (m.k === 'atk') {
       const r = doAttack(s, m.from, m.to, ev);
       killed = r.killed || s.h[m.from] <= 0;
@@ -202,7 +207,13 @@
       ev.push({ e: 'end', result: r2, again: r2 === null });
       return { state: s, events: ev, result: r2, mover: me };
     }
+    const wasFirst = s.first;
     const res = endTurn(s, ev, killed);
+    if (wasFirst) {
+      s.first = false;
+      // comeback rule: P1's opening turn killed a P2 card -> P2 gets a free heart for any of their cards
+      if (res === null && me === 0 && countAlive(s, 1) < s.n) s.gift = true;
+    }
     ev.push({ e: 'end', result: res });
     return { state: s, events: ev, result: res, mover: me };
   }
@@ -213,6 +224,7 @@
     const me = s.turn, foe = 1 - me;
     const mine = aliveIdx(s, me), theirs = aliveIdx(s, foe);
     const out = [];
+    if (s.gift) { for (const to of mine) out.push({ k: 'gift', from: to, to }); return out; }
     for (const i of mine) {
       for (const j of theirs) {
         const base = { k: 'atk', from: i, to: j };
@@ -247,7 +259,7 @@
   /* ---------- helpers for UI / bots ---------- */
 
   function stateKey(s) {
-    let k = s.turn + ':' + Math.min(s.nk, FATIGUE_AT + 1) + ':';
+    let k = s.turn + (s.gift ? 'g' : '') + ':' + Math.min(s.nk, FATIGUE_AT + 1) + ':';
     for (let i = 0; i < s.h.length; i++) k += s.h[i] + '.' + s.a[i] + '.' + s.c[i] + ',';
     return k;
   }
