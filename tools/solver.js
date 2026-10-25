@@ -32,7 +32,7 @@ function makeSolver(opts) {
     for (const o of outs) {
       let v;
       if (o.result !== null) v = o.result === 0 ? 0 : (o.result === s.turn + 1 ? 1 : -1);
-      else v = -val(o.state);
+      else v = o.state.turn === s.turn ? val(o.state) : -val(o.state);
       if (v > best) { best = v; if (best === 1) break; }
     }
     memo.set(k, best);

@@ -16,7 +16,7 @@
  *   {k:'fsac', from, src, attr, to}              foam sacrifice
  *
  * Rule changes vs the pico-8 cart (v0.91b):
- *   - sacrifice now ENDS the turn (humans and bots alike)
+ *   - sacrifice (and foam pop) is a FREE action for everybody: it never ends the turn
  *   - rest heals +1 up to the card's starting hearts (was: only 1 -> 2),
  *     but not once exhaustion has begun (otherwise healing could cancel it)
  *   - fatigue: after FATIGUE_AT turns with no kill, at the end of every round
@@ -55,11 +55,13 @@
         const ty = types[side][k];
         const base = ty && ty.t !== undefined ? ty : { t: ty };
         s.t.push(base.t);
-        const hp = (variant.hp || 2) + (b.h || 0) + (base.h || 0);
+        const ex0 = (side === 1 && variant.p2cards && variant.p2cards[k]) || {};
+        const hp = (variant.hp || 2) + (b.h || 0) + (base.h || 0) + (ex0.h || 0);
         s.h.push(Math.max(1, hp));
         s.cap.push(Math.max(1, hp));
-        s.a.push(Math.max(0, (b.a || 0) + (base.a || 0)));
-        s.c.push(Math.max(0, (b.c || 0) + (base.c || 0)));
+        const extra = (side === 1 && variant.p2cards && variant.p2cards[k]) || {};
+        s.a.push(Math.max(0, (b.a || 0) + (base.a || 0) + (extra.a || 0)));
+        s.c.push(Math.max(0, (b.c || 0) + (base.c || 0) + (extra.c || 0)));
       }
     }
     return s;
@@ -192,6 +194,13 @@
       doSteal(s, m.src, m.attr, m.to, ev);
       s.h[m.from] = 0;
       ev.push({ e: 'die', card: m.from, by: 'sac' });
+    }
+    if (m.k === 'sac' || m.k === 'fsac') {
+      // free action: same player moves again (nk / fatigue untouched)
+      tidy(s);
+      const r2 = result(s);
+      ev.push({ e: 'end', result: r2, again: r2 === null });
+      return { state: s, events: ev, result: r2, mover: me };
     }
     const res = endTurn(s, ev, killed);
     ev.push({ e: 'end', result: res });

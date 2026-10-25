@@ -37,18 +37,18 @@
       outs.sort((x, y) => y.h - x.h);
       let best = -1;
       for (const o of outs) {
-        const v = o.result !== null ? outcome(o, s.turn) : -val(o.state);
+        const v = o.result !== null ? outcome(o, s.turn) : (o.state.turn === s.turn ? val(o.state) : -val(o.state));
         if (v > best) { best = v; if (best === 1) break; }
       }
       memo.set(k, best);
       return best;
     }
 
-    function childValue(s, o) { return o.result !== null ? outcome(o, s.turn) : -val(o.state); }
+    function childValue(s, o) { return o.result !== null ? outcome(o, s.turn) : (o.state.turn === s.turn ? val(o.state) : -val(o.state)); }
 
     // fraction of the opponent's replies that are mistakes (they lose value by playing them)
-    function trapScore(o) {
-      if (o.result !== null) return 0;
+    function trapScore(o, mover) {
+      if (o.result !== null || o.state.turn === mover) return 0;
       const st = o.state, replies = E.legalMoves(st).map(m => E.applyMove(st, m));
       const vals = replies.map(r => childValue(st, r));
       const top = Math.max.apply(null, vals);
@@ -68,7 +68,7 @@
         if (best === 1) {
           for (const x of cand) x.score = (x.o.result !== null ? 1e6 : 0) + B.evaluate(x.o.state, s.turn);
         } else {
-          for (const x of cand) x.score = trapScore(x.o) * 100 + B.evaluate(x.o.state, s.turn) * 0.01;
+          for (const x of cand) x.score = trapScore(x.o, s.turn) * 100 + B.evaluate(x.o.state, s.turn) * 0.01;
         }
         const top = Math.max.apply(null, cand.map(x => x.score));
         cand = cand.filter(x => x.score >= top - 1e-9);

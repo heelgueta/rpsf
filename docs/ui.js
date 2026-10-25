@@ -14,7 +14,7 @@
     rain: { name: '🌧 Rain', blurb: 'everyone starts with +1 heart. longer fights, rest matters.', def: { bonus: { h: 1 } } },
     glass: { name: '🔮 Glass', blurb: 'everyone starts with +1 cut (thorns). hitting hurts you back.', def: { bonus: { c: 1 } } },
     fire: { name: '🔥 Fire', blurb: 'everyone starts with +1 attack. every hit bites harder.', def: { bonus: { a: 1 } } },
-    fair: { name: '⚖️ Handicap', blurb: 'P2 starts with +1 cut. in classic, P1 wins with perfect play; this evens it out (solver says: perfect play = draw).', def: { bonus2: { c: 1 } } },
+    fair: { name: '⚖️ Handicap', blurb: 'P2 starts with +1 heart on scissors and foam. in classic P1 wins with perfect play; here the solver says perfect play is a draw.', def: { p2cards: [{}, {}, { h: 1 }, { h: 1 }] } },
   };
   window.RPSF_VARIANTS = VARIANTS;
 
@@ -67,7 +67,7 @@
     <h4>💀 loot</h4>
     <p>Kill a card (and survive) and you gain: rock → +1 ⚔️, paper → +1 ❤️, scissors → +1 🌵. Foam gives nothing — but see below.</p>
     <h4>🔥 sacrifice</h4>
-    <p>Burn one of your cards to give another of yours the same bonus a kill of it would give. Ends your turn. You can't sacrifice your last card.</p>
+    <p>Burn one of your cards to give another of yours the same bonus a kill of it would give. It's a <b>free action</b>: it does not end your turn — you still act afterwards. You can't sacrifice your last card.</p>
     <h4>🫧 foam is weird</h4>
     <p>When foam <b>dies in a fight</b>, the killer moves 1 point (❤️/⚔️/🌵) from <i>any</i> card on the board to one of the killer's own cards. When you <b>sacrifice foam</b>, you do the same move (and foam's own points can be passed on).</p>
     <h4>💤 rest</h4>

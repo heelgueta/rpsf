@@ -9,6 +9,6 @@ this repo now holds the v2 web version.
 - `tools/` — exhaustive solver and analysis scripts (node)
 
 Rules summary lives in the in-game "how to play". Changes from the cart:
-sacrifice ends the turn for everybody, rest heals up to starting hearts,
+sacrifice is a free action that never ends the turn (for humans and bots), rest heals up to starting hearts,
 and *exhaustion* (10 turns with no kill → everyone loses a heart per round,
 no healing) guarantees every game ends.
