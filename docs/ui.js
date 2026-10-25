@@ -2,7 +2,7 @@
 (function () {
   'use strict';
   const E = window.RPSF;
-  const BOTS = Object.assign({}, window.RPSBots.BOTS, (window.RPSOracle ? { oracle: window.RPSOracle } : {}));
+  const BOTS = Object.assign({}, window.RPSBots.BOTS, { oracle: { name: 'Oracle 🔮', blurb: 'has solved the game. plays perfectly, sets traps when losing.', pick: s => window.RPSBots.sage(s) } });
   const ICON = ['🪨', '📄', '✂️', '🫧'];
   const NAME = ['Rock', 'Paper', 'Scissors', 'Foam'];
   const AICON = { h: '❤️', a: '⚔️', c: '🌵' };
@@ -14,6 +14,7 @@
     rain: { name: '🌧 Rain', blurb: 'everyone starts with +1 heart. longer fights, rest matters.', def: { bonus: { h: 1 } } },
     glass: { name: '🔮 Glass', blurb: 'everyone starts with +1 cut (thorns). hitting hurts you back.', def: { bonus: { c: 1 } } },
     fire: { name: '🔥 Fire', blurb: 'everyone starts with +1 attack. every hit bites harder.', def: { bonus: { a: 1 } } },
+    fair: { name: '⚖️ Handicap', blurb: 'P2 starts with +1 cut. in classic, P1 wins with perfect play; this evens it out (solver says: perfect play = draw).', def: { bonus2: { c: 1 } } },
   };
   window.RPSF_VARIANTS = VARIANTS;
 
@@ -98,6 +99,7 @@
     const st = E.newState(V.def);
     G = { state: st, view: E.clone(st), mode: cfg.mode, human, bottom: cfg.mode === 'bot' ? human : 0, botKey: cfg.bot, variant: cfg.variant,
       moves: [], busy: false, skip: false, ui: null, legal: [], log: [], over: false, t0: Date.now() };
+    if (worker) worker.postMessage({ reset: true });
     $('menu').classList.add('hidden'); $('game').classList.remove('hidden');
     buildBoard(); render(); say('fight!'); nextTurn();
   }
@@ -234,11 +236,33 @@
     render();
     if (isHuman(G.state.turn)) { setHint('<b>tap one of your cards</b>'); setBtns([]); return; }
     G.busy = true; render(); setHint('…'); setBtns([]);
-    setTimeout(() => {
+    const gid = G;
+    setTimeout(async () => {
       let m;
-      try { m = BOTS[G.botKey].pick(G.state, Math.random); } catch (err) { console.error(err); m = G.legal[Math.floor(Math.random() * G.legal.length)]; }
-      commit(m);
+      try { m = await botMove(G.state); } catch (err) { console.error(err); m = G.legal[Math.floor(Math.random() * G.legal.length)]; }
+      if (G === gid && !G.over) commit(m);
     }, 450);
+  }
+
+  let worker = null, reqId = 0; const pending = {};
+  function oracleMove(state) {
+    return new Promise(res => {
+      const fallback = () => res(window.RPSBots.sage(state));
+      try {
+        if (!worker) {
+          worker = new Worker('oracle-worker.js');
+          worker.onmessage = e => { const p = pending[e.data.id]; if (p) { delete pending[e.data.id]; p(e.data); } };
+          worker.onerror = () => { worker = null; Object.keys(pending).forEach(k => { pending[k]({ error: 'worker' }); delete pending[k]; }); };
+        }
+        const id = ++reqId;
+        pending[id] = d => (d.move ? res(d.move) : fallback());
+        worker.postMessage({ id, state, ms: 9000 });
+      } catch (err) { fallback(); }
+    });
+  }
+  function botMove(state) {
+    if (G.botKey === 'oracle') return oracleMove(state);
+    return Promise.resolve(BOTS[G.botKey].pick(state, Math.random));
   }
 
   async function commit(move) {

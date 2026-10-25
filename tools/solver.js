@@ -28,6 +28,7 @@ function makeSolver(opts) {
     // cheap ordering: attacks that kill first, then other attacks
     let best = -1;
     const outs = moves.map(m => E.applyMove(s, m));
+    if (opts.order) { for (const o of outs) o.h = opts.order(o.state, s.turn); outs.sort((x, y) => y.h - x.h); }
     for (const o of outs) {
       let v;
       if (o.result !== null) v = o.result === 0 ? 0 : (o.result === s.turn + 1 ? 1 : -1);
